@@ -139,7 +139,7 @@ class MenuPage extends StatelessWidget {
               // Greeting Section
               SizedBox(height: 10),
               Text(
-                "Selamat Datang, $username! 👋",
+                "Welcome, $username! 👋",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
