@@ -32,6 +32,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
     return "$minutesStr:$secondsStr:$hundredsStr";
   }
 
+  // Fungsi untuk Mulai atau Lanjutkan
   void _startStopwatch() {
     if (!_stopwatch.isRunning) {
       _stopwatch.start();
@@ -40,11 +41,18 @@ class _StopwatchPageState extends State<StopwatchPage> {
     }
   }
 
-  // MODIFIKASI: Sekarang fungsi ini mencatat waktu tanpa menghentikan stopwatch
+  // BARU: Fungsi untuk menjeda (Pause)
+  void _pauseStopwatch() {
+    if (_stopwatch.isRunning) {
+      _stopwatch.stop();
+      _timer?.cancel();
+      setState(() {});
+    }
+  }
+
   void _recordLap() {
     if (_stopwatch.isRunning) {
       setState(() {
-        // Masukkan waktu saat ini ke daftar (index 0 agar yang terbaru di atas)
         _laps.insert(0, _displayTime);
       });
     }
@@ -72,10 +80,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          "Stopwatch Multi-Peserta",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text("Stopwatch", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue[800],
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -88,25 +93,42 @@ class _StopwatchPageState extends State<StopwatchPage> {
               fontSize: 60,
               fontWeight: FontWeight.bold,
               color: Colors.blue[900],
-              fontFamily: 'monospace', // Agar angka tidak bergeser saat berubah
+              fontFamily: 'monospace',
             ),
           ),
           SizedBox(height: 50),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Tombol Start
+              // Tombol Start / Pause Dinamis
+              if (!_stopwatch.isRunning)
+                _buildButton(
+                  Icons.play_arrow,
+                  Colors.green,
+                  _startStopwatch,
+                  "Mulai",
+                )
+              else
+                _buildButton(
+                  Icons.pause,
+                  Colors.amber[700]!,
+                  _pauseStopwatch,
+                  "Pause",
+                ),
+
+              SizedBox(width: 20),
+
+              // Tombol Catat (Hanya aktif jika sedang jalan)
               _buildButton(
-                Icons.play_arrow,
-                Colors.green,
-                _startStopwatch,
-                "Mulai",
+                Icons.timer,
+                _stopwatch.isRunning ? Colors.orange : Colors.grey,
+                _recordLap,
+                "Catat",
               ),
+
               SizedBox(width: 20),
-              // Tombol Lap/Catat (Waktu tetap jalan)
-              _buildButton(Icons.timer, Colors.orange, _recordLap, "Catat"),
-              SizedBox(width: 20),
-              // Tombol Reset/Stop
+
+              // Tombol Reset
               _buildButton(Icons.refresh, Colors.red, _resetStopwatch, "Reset"),
             ],
           ),
@@ -171,6 +193,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
           onPressed: onPressed,
           backgroundColor: color,
           heroTag: null,
+          elevation: 2,
           child: Icon(icon, color: Colors.white, size: 30),
         ),
         SizedBox(height: 8),
