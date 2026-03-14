@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:tugasmobile/konversihari.dart';
 import 'kelompok.dart';
 import 'kalkulator.dart';
 import 'bilangan.dart';
 import 'stopwatch.dart';
 import 'login.dart';
 import 'piramid.dart';
+import 'cek_umur.dart';
+import 'cek_bulan.dart';
+import 'jumlah_angka.dart';
 
 class MenuPage extends StatelessWidget {
   final String username;
@@ -201,6 +205,39 @@ class MenuPage extends StatelessWidget {
                 subtitle: "Kalkulator untuk menghitung luas dan volume piramid",
                 icon: Icons.architecture,
                 page: PiramidPage(),
+                gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
+              ),
+
+              _buildMenuCard(
+                context,
+                title: "Konversi",
+                subtitle: "Konversi Tanggal ke Hari dan Hari Pasaran",
+                icon: Icons.calendar_today,
+                page: JavaCalendarPage(),
+                gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
+              ),
+              _buildMenuCard(
+                context,
+                title: "Cek Umur",
+                subtitle: "Hitung Umur Detail Menurut Waktu Lahir",
+                icon: Icons.cake,
+                page: CekUmurPage(),
+                gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
+              ),
+              _buildMenuCard(
+                context,
+                title: "Cek Bulan",
+                subtitle: "Konversi Tanggal Masehi dan Hijriah",
+                icon: Icons.calendar_month,
+                page: CekBulanPage(),
+                gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
+              ),
+              _buildMenuCard(
+                context,
+                title: "Jumlah Angka",
+                subtitle: "Menjumlahkan Angka",
+                icon: Icons.add_circle_outline,
+                page: JumlahAngkaPage(),
                 gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
               ),
             ],

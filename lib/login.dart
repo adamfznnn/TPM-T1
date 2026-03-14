@@ -11,7 +11,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController password = TextEditingController();
 
   void prosesLogin() {
-    if (username.text == "adminmbg" && password.text == "makananbergizi") {
+    if (username.text == "adminmbg" && password.text == "jawa") {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
