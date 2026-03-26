@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(MaterialApp(home: StopwatchPage()));
+}
+
 class StopwatchPage extends StatefulWidget {
   @override
   _StopwatchPageState createState() => _StopwatchPageState();
@@ -9,13 +13,26 @@ class StopwatchPage extends StatefulWidget {
 class _StopwatchPageState extends State<StopwatchPage> {
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
-  String _displayTime = "00:00:00";
+
+  final Duration _initialOffset = Duration(minutes: 0, seconds: 0);
+
+  late String _displayTime;
   List<String> _laps = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi tampilan awal dengan offset yang ditentukan
+    _displayTime = _formatTime(_initialOffset.inMilliseconds);
+  }
 
   void _updateTime(Timer timer) {
     if (_stopwatch.isRunning && mounted) {
       setState(() {
-        _displayTime = _formatTime(_stopwatch.elapsedMilliseconds);
+        // Logika: Waktu berjalan + Waktu awal
+        int totalMilliseconds =
+            _stopwatch.elapsedMilliseconds + _initialOffset.inMilliseconds;
+        _displayTime = _formatTime(totalMilliseconds);
       });
     }
   }
@@ -32,7 +49,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
     return "$minutesStr:$secondsStr:$hundredsStr";
   }
 
-  // Fungsi untuk Mulai atau Lanjutkan
   void _startStopwatch() {
     if (!_stopwatch.isRunning) {
       _stopwatch.start();
@@ -41,7 +57,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
     }
   }
 
-  // BARU: Fungsi untuk menjeda (Pause)
   void _pauseStopwatch() {
     if (_stopwatch.isRunning) {
       _stopwatch.stop();
@@ -63,7 +78,8 @@ class _StopwatchPageState extends State<StopwatchPage> {
     _stopwatch.reset();
     _timer?.cancel();
     setState(() {
-      _displayTime = "00:00:00";
+      // Kembali ke waktu awal (offset), bukan ke 00:00:00
+      _displayTime = _formatTime(_initialOffset.inMilliseconds);
       _laps.clear();
     });
   }
@@ -80,7 +96,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Stopwatch", style: TextStyle(color: Colors.white)),
+        title: Text(
+          "Stopwatch Custom Start",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.blue[800],
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -96,11 +115,15 @@ class _StopwatchPageState extends State<StopwatchPage> {
               fontFamily: 'monospace',
             ),
           ),
-          SizedBox(height: 50),
+          SizedBox(height: 10),
+          Text(
+            "Mulai dari: ${_formatTime(_initialOffset.inMilliseconds)}",
+            style: TextStyle(color: Colors.grey),
+          ),
+          SizedBox(height: 40),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Tombol Start / Pause Dinamis
               if (!_stopwatch.isRunning)
                 _buildButton(
                   Icons.play_arrow,
@@ -118,7 +141,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
               SizedBox(width: 20),
 
-              // Tombol Catat (Hanya aktif jika sedang jalan)
               _buildButton(
                 Icons.timer,
                 _stopwatch.isRunning ? Colors.orange : Colors.grey,
@@ -128,7 +150,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
               SizedBox(width: 20),
 
-              // Tombol Reset
               _buildButton(Icons.refresh, Colors.red, _resetStopwatch, "Reset"),
             ],
           ),
@@ -155,13 +176,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Waktu ${_laps.length - index}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text("Lap ${_laps.length - index}"),
                       Text(
                         _laps[index],
                         style: TextStyle(
@@ -193,7 +208,6 @@ class _StopwatchPageState extends State<StopwatchPage> {
           onPressed: onPressed,
           backgroundColor: color,
           heroTag: null,
-          elevation: 2,
           child: Icon(icon, color: Colors.white, size: 30),
         ),
         SizedBox(height: 8),

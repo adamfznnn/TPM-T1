@@ -72,7 +72,7 @@ class _JumlahAngkaPageState extends State<JumlahAngkaPage> {
                 controller: _controller,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: "Masukkan deretan angka atau kalimat disini...\nContoh: Beli apel 5 dan mangga 10",
+                  hintText: "Masukkan deretan angka atau kalimat disini...",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.blue[300]!),

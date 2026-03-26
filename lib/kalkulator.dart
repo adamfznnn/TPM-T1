@@ -11,6 +11,14 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
   double _num1 = 0;
   String _operator = "";
 
+  String _formatDouble(double val) {
+    String res = val.toString();
+    if (res.endsWith('.0')) {
+      res = res.substring(0, res.length - 2);
+    }
+    return res.replaceAll('.', ',');
+  }
+
   void _onButtonPressed(String value) {
     setState(() {
       if (value == "C") {
@@ -21,28 +29,62 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
       } else if (value == "⌫") {
         if (_currentInput.isNotEmpty) {
           _currentInput = _currentInput.substring(0, _currentInput.length - 1);
-          _output = _currentInput.isEmpty ? "0" : _currentInput;
+          if (_currentInput == "-" || _currentInput.isEmpty) {
+            _currentInput = "";
+            _output = "0";
+          } else {
+            _output = _currentInput;
+          }
+        }
+      } else if (value == "+/-") {
+        if (_currentInput.isEmpty) {
+          _currentInput = "-";
+          _output = "-";
+        } else if (_currentInput == "-") {
+          _currentInput = "";
+          _output = "0";
+        } else {
+          if (_currentInput.startsWith("-")) {
+            _currentInput = _currentInput.substring(1);
+          } else {
+            _currentInput = "-" + _currentInput;
+          }
+          _output = _currentInput;
+        }
+      } else if (value == ",") {
+        if (!_currentInput.contains(",")) {
+          if (_currentInput.isEmpty || _currentInput == "0") {
+            _currentInput = "0,";
+          } else if (_currentInput == "-") {
+            _currentInput = "-0,";
+          } else {
+            _currentInput += ",";
+          }
+          _output = _currentInput;
         }
       } else if (value == "+" || value == "-") {
-        _num1 = double.tryParse(_output) ?? 0;
+        _num1 = double.tryParse(_output.replaceAll(',', '.')) ?? 0;
         _operator = value;
         _currentInput = "";
       } else if (value == "=") {
-        double num2 = double.tryParse(_output) ?? 0;
-        if (_operator == "+") {
-          _output = (_num1 + num2).toString();
-        } else if (_operator == "-") {
-          _output = (_num1 - num2).toString();
+        if (_operator.isNotEmpty) {
+          double num2 = double.tryParse(_output.replaceAll(',', '.')) ?? 0;
+          double result = 0;
+          if (_operator == "+") {
+            result = _num1 + num2;
+          } else if (_operator == "-") {
+            result = _num1 - num2;
+          }
+          _output = _formatDouble(result);
+          _currentInput = _output;
+          _operator = "";
         }
-        // Menghilangkan .0 jika hasilnya bulat
-        if (_output.endsWith(".0")) {
-          _output = _output.substring(0, _output.length - 2);
-        }
-        _currentInput = _output;
-        _operator = "";
       } else {
-        if (_currentInput == "0") _currentInput = "";
-        _currentInput += value;
+        if (_currentInput == "0") {
+          _currentInput = value;
+        } else {
+          _currentInput += value;
+        }
         _output = _currentInput;
       }
     });
@@ -59,7 +101,9 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
             foregroundColor: textColor,
             elevation: 2,
             padding: EdgeInsets.symmetric(vertical: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: Text(
             text,
@@ -75,7 +119,10 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Kalkulator Penjumlahan & Pengurangan", style: TextStyle(color: Colors.white)),
+        title: Text(
+          "Kalkulator Penjumlahan & Pengurangan",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.blue[800],
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -88,25 +135,33 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
               decoration: BoxDecoration(
                 color: Colors.blue[50],
-                border: Border(bottom: BorderSide(color: Colors.blue[100]!, width: 2)),
+                border: Border(
+                  bottom: BorderSide(color: Colors.blue[100]!, width: 2),
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    _operator.isNotEmpty ? "$_num1 $_operator" : "",
+                    _operator.isNotEmpty
+                        ? "${_formatDouble(_num1)} $_operator"
+                        : "",
                     style: TextStyle(fontSize: 20, color: Colors.blue[300]),
                   ),
                   Text(
                     _output,
-                    style: TextStyle(fontSize: 60, color: Colors.blue[900], fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 60,
+                      color: Colors.blue[900],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Button Grid
           Container(
             padding: EdgeInsets.all(12),
@@ -142,8 +197,14 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
                 ),
                 Row(
                   children: [
-                    _buildButton("⌫", Colors.blue[600]!, Colors.white),
+                    _buildButton("+/-", Colors.white, Colors.black87),
                     _buildButton("0", Colors.white, Colors.black87),
+                    _buildButton(",", Colors.white, Colors.black87),
+                  ],
+                ),
+                Row(
+                  children: [
+                    _buildButton("⌫", Colors.blue[600]!, Colors.white),
                     _buildButton("=", Colors.blue[800]!, Colors.white),
                   ],
                 ),
