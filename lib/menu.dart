@@ -9,6 +9,7 @@ import 'piramid.dart';
 import 'cek_umur.dart';
 import 'cek_bulan.dart';
 import 'jumlah_angka.dart';
+import 'saka.dart';
 
 class MenuPage extends StatelessWidget {
   final String username;
@@ -238,6 +239,14 @@ class MenuPage extends StatelessWidget {
                 subtitle: "Menjumlahkan Angka",
                 icon: Icons.add_circle_outline,
                 page: JumlahAngkaPage(),
+                gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
+              ),
+              _buildMenuCard(
+                context,
+                title: "Saka Converter",
+                subtitle: "Konversi Tahun Masehi dan Saka",
+                icon: Icons.history_edu,
+                page: SakaConverterApp(),
                 gradientColors: [Colors.blue.shade700, Colors.blue.shade400],
               ),
             ],

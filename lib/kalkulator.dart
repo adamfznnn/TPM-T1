@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+void main() {
+  runApp(
+    MaterialApp(debugShowCheckedModeBanner: false, home: KalkulatorPage()),
+  );
+}
 
 class KalkulatorPage extends StatefulWidget {
   @override
@@ -6,10 +13,24 @@ class KalkulatorPage extends StatefulWidget {
 }
 
 class _KalkulatorPageState extends State<KalkulatorPage> {
-  String _output = "0";
+  // Controller untuk mengontrol teks di dalam TextField
+  TextEditingController _controller = TextEditingController(text: "0");
+
   String _currentInput = "";
   double _num1 = 0;
   String _operator = "";
+
+  @override
+  void initState() {
+    super.initState();
+    // Menyimak perubahan di TextField (jika user paste manual)
+    _controller.addListener(() {
+      String newText = _controller.text.replaceAll(',', '.');
+      if (newText != _currentInput && double.tryParse(newText) != null) {
+        _currentInput = newText;
+      }
+    });
+  }
 
   String _formatDouble(double val) {
     String res = val.toString();
@@ -19,64 +40,56 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
     return res.replaceAll('.', ',');
   }
 
+  void _updateDisplay(String text) {
+    setState(() {
+      _controller.text = text;
+    });
+  }
+
   void _onButtonPressed(String value) {
     setState(() {
       if (value == "C") {
-        _output = "0";
+        _updateDisplay("0");
         _currentInput = "";
         _num1 = 0;
         _operator = "";
       } else if (value == "⌫") {
         if (_currentInput.isNotEmpty) {
           _currentInput = _currentInput.substring(0, _currentInput.length - 1);
-          if (_currentInput == "-" || _currentInput.isEmpty) {
-            _currentInput = "";
-            _output = "0";
-          } else {
-            _output = _currentInput;
-          }
+          _updateDisplay(
+            _currentInput.isEmpty ? "0" : _currentInput.replaceAll('.', ','),
+          );
         }
       } else if (value == "+/-") {
-        if (_currentInput.isEmpty) {
-          _currentInput = "-";
-          _output = "-";
-        } else if (_currentInput == "-") {
-          _currentInput = "";
-          _output = "0";
+        if (_currentInput.startsWith("-")) {
+          _currentInput = _currentInput.substring(1);
         } else {
-          if (_currentInput.startsWith("-")) {
-            _currentInput = _currentInput.substring(1);
-          } else {
-            _currentInput = "-" + _currentInput;
-          }
-          _output = _currentInput;
+          _currentInput = "-" + (_currentInput.isEmpty ? "0" : _currentInput);
         }
+        _updateDisplay(_currentInput.replaceAll('.', ','));
       } else if (value == ",") {
-        if (!_currentInput.contains(",")) {
-          if (_currentInput.isEmpty || _currentInput == "0") {
-            _currentInput = "0,";
-          } else if (_currentInput == "-") {
-            _currentInput = "-0,";
-          } else {
-            _currentInput += ",";
-          }
-          _output = _currentInput;
+        if (!_currentInput.contains(".")) {
+          _currentInput += (_currentInput.isEmpty ? "0." : ".");
+          _updateDisplay(_currentInput.replaceAll('.', ','));
         }
       } else if (value == "+" || value == "-") {
-        _num1 = double.tryParse(_output.replaceAll(',', '.')) ?? 0;
+        _num1 =
+            double.tryParse(_currentInput) ??
+            double.tryParse(_controller.text.replaceAll(',', '.')) ??
+            0;
         _operator = value;
         _currentInput = "";
       } else if (value == "=") {
         if (_operator.isNotEmpty) {
-          double num2 = double.tryParse(_output.replaceAll(',', '.')) ?? 0;
-          double result = 0;
-          if (_operator == "+") {
-            result = _num1 + num2;
-          } else if (_operator == "-") {
-            result = _num1 - num2;
-          }
-          _output = _formatDouble(result);
-          _currentInput = _output;
+          double num2 =
+              double.tryParse(_currentInput) ??
+              double.tryParse(_controller.text.replaceAll(',', '.')) ??
+              0;
+          double result = (_operator == "+") ? _num1 + num2 : _num1 - num2;
+
+          String formatted = _formatDouble(result);
+          _updateDisplay(formatted);
+          _currentInput = result.toString();
           _operator = "";
         }
       } else {
@@ -85,33 +98,9 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
         } else {
           _currentInput += value;
         }
-        _output = _currentInput;
+        _updateDisplay(_currentInput.replaceAll('.', ','));
       }
     });
-  }
-
-  Widget _buildButton(String text, Color bgColor, Color textColor) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: ElevatedButton(
-          onPressed: () => _onButtonPressed(text),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: bgColor,
-            foregroundColor: textColor,
-            elevation: 2,
-            padding: EdgeInsets.symmetric(vertical: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -119,26 +108,16 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          "Kalkulator Penjumlahan & Pengurangan",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: Text("Kalkulator ", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue[800],
-        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
-          // Display Area
           Expanded(
             child: Container(
               alignment: Alignment.bottomRight,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                border: Border(
-                  bottom: BorderSide(color: Colors.blue[100]!, width: 2),
-                ),
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              color: Colors.blue[50],
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -149,20 +128,32 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
                         : "",
                     style: TextStyle(fontSize: 20, color: Colors.blue[300]),
                   ),
-                  Text(
-                    _output,
+                  // MENGGUNAKAN TEXTFIELD AGAR BISA COPY-PASTE SEMPURNA
+                  TextField(
+                    controller: _controller,
+                    readOnly: false, // Biarkan false agar menu paste muncul
+                    showCursor: true,
+                    textAlign: TextAlign.right,
                     style: TextStyle(
-                      fontSize: 60,
+                      fontSize: 50,
                       color: Colors.blue[900],
                       fontWeight: FontWeight.bold,
                     ),
+                    decoration: InputDecoration(
+                      border: InputBorder.none, // Hilangkan garis bawah
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,-]')),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
 
-          // Button Grid
+          // Tombol-tombol kalkulator
           Container(
             padding: EdgeInsets.all(12),
             child: Column(
@@ -212,6 +203,29 @@ class _KalkulatorPageState extends State<KalkulatorPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildButton(String text, Color bgColor, Color textColor) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: ElevatedButton(
+          onPressed: () => _onButtonPressed(text),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: bgColor,
+            foregroundColor: textColor,
+            padding: EdgeInsets.symmetric(vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
     );
   }

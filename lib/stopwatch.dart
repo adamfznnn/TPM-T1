@@ -14,7 +14,11 @@ class _StopwatchPageState extends State<StopwatchPage> {
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
 
-  final Duration _initialOffset = Duration(minutes: 0, seconds: 0);
+  final Duration _initialOffset = Duration(
+    minutes: 0,
+    seconds: 0,
+    milliseconds: 00,
+  );
 
   late String _displayTime;
   List<String> _laps = [];
